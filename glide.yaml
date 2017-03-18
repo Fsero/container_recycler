@@ -1,0 +1,4 @@
+package: bitbucket.org/fseros/container_recycler
+import:
+- package: github.com/Sirupsen/logrus
+  version: ~0.11.5
