@@ -2,3 +2,7 @@ package: bitbucket.org/fseros/container_recycler
 import:
 - package: github.com/Sirupsen/logrus
   version: ~0.11.5
+- package: github.com/docker/docker
+  version: ~17.3.1-ce-rc1
+  subpackages:
+  - client

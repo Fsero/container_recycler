@@ -4,6 +4,7 @@ import (
 	"bitbucket.org/fseros/container_recycler/handlers"
 	"os"
 	"strings"
+	"time"
 )
 
 //{"output":"17:20:45.212076717: Alert Shell spawned in a container other than entrypoint)",
@@ -18,6 +19,10 @@ func main() {
 	handlers.SetupLogging()
 	for _, arg := range os.Args[1:] {
 		r := strings.NewReader(arg)
-		handlers.CheckNotifications(r)
+		handlers.ParseFalcoNotifications(r)
 	}
+	container_list := handlers.ListRunningContainers()
+	timeout_duration := (time.Duration(10) * time.Second)
+	handlers.ScheduleContainerStop("alexwhen/docker-2048", container_list, &timeout_duration)
+	//handlers.StopContainer("alexwhen/docker-2048", container_list)
 }
