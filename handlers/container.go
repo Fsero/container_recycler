@@ -44,13 +44,22 @@ func ScheduleContainerStop(ContainerName string, container_list []ContainerInfo,
 	var string alreadyBeingDeletedFlag = "/var/tmp/container_recycler_scheduled_stop"
 	fi, err := os.Stat(alreadyBeingDeletedFlag)
 	if err == nil {
+		modtime := fi.ModTime()
+		duration := time.Since(modtime)
+		if duration.Minutes() > 20 {
+			log.Infof("looks like file was not deleted in last execution, cleaning up...")
+			err := os.Remove(alreadyBeingDeletedFlag)
+			if err != nil {
+				log.Panicf("unable to delete flag file %s", alreadyBeingDeletedFlag)
+			}
 
+		}
 		log.Infof("container %s already scheduled for stopping", ContainerName)
 		return
 	}
 	log.Infof("scheduled container %s for stopping", ContainerName)
 	// creating the flag
-	err := ioutil.WriteFile(alreadyBeingDeletedFlag, data, 0644)
+	err = ioutil.WriteFile(alreadyBeingDeletedFlag, data, 0644)
 	if err != nil {
 		log.Panic(err)
 	}

@@ -30,6 +30,12 @@ func ParseFalcoNotifications(r io.Reader) {
 		} else {
 			if f.Priority == "Alert" {
 				log.Info("Alert received")
+				container_list := handlers.ListRunningContainers()
+				timeout_duration, err := time.ParseDuration("10s")
+				if err != nil {
+					log.Panic("incorrect timeout set, please specify a right one")
+				}
+				handlers.ScheduleContainerStop("ssh", container_list, &timeout_duration)
 			}
 			log.Info(f)
 			log.Info(f.Time.String())
