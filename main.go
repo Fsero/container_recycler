@@ -2,6 +2,7 @@ package main
 
 import (
 	"bitbucket.org/fseros/container_recycler/handlers"
+	"bufio"
 	"context"
 	"os"
 	"strings"
@@ -19,9 +20,6 @@ func main() {
 	ctx = context.WithValue(ctx, "container_images_list_to_stop", []string{"ssh"})
 	ctx = context.WithValue(ctx, "container_api_timeout", "10s")
 
-	// read from stdin
-	ris := bufio.NewReader(os.Stdin)
-	handlers.ParseFalcoNotifications(r, ctx)
 	// reading arguments
 
 	for _, arg := range os.Args[1:] {
@@ -29,5 +27,9 @@ func main() {
 
 		handlers.ParseFalcoNotifications(r, ctx)
 	}
+
+	// read from stdin
+	r := bufio.NewReader(os.Stdin)
+	handlers.ParseFalcoNotifications(r, ctx)
 
 }
