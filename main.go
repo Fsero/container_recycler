@@ -19,9 +19,15 @@ func main() {
 	ctx = context.WithValue(ctx, "container_images_list_to_stop", []string{"ssh"})
 	ctx = context.WithValue(ctx, "container_api_timeout", "10s")
 
+	// read from stdin
+	ris := bufio.NewReader(os.Stdin)
+	handlers.ParseFalcoNotifications(r, ctx)
+	// reading arguments
+
 	for _, arg := range os.Args[1:] {
 		r := strings.NewReader(arg)
 
 		handlers.ParseFalcoNotifications(r, ctx)
 	}
+
 }
