@@ -8,23 +8,20 @@ import (
 	"strings"
 )
 
-//{"output":"17:20:45.212076717: Alert Shell spawned in a container other than entrypoint)",
-// "priority":"Alert","rule":"Run shell in container","time":"2017-02-26T17:20:45.212076717Z"}
-// TODO: Replace with config file
-
 func main() {
 	handlers.SetupLogging()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	ctx = context.WithValue(ctx, "exposure_time", "10s")
-	ctx = context.WithValue(ctx, "container_images_list_to_stop", []string{"ssh"})
+
+	// TODO: Replace with config file
+	ctx = context.WithValue(ctx, "exposure_time", "10m")
 	ctx = context.WithValue(ctx, "container_api_timeout", "10s")
+	ctx = context.WithValue(ctx, "tmp_flags_file_path", "/var/tmp/container_recycler_")
 
 	// reading arguments
 
 	for _, arg := range os.Args[1:] {
 		r := strings.NewReader(arg)
-
 		handlers.ParseFalcoNotifications(r, ctx)
 	}
 
