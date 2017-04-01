@@ -22,6 +22,7 @@ type FalcoNotification struct {
 func SetupLogging() {
 	log.SetFormatter(&log.TextFormatter{})
 	log.SetOutput(os.Stdout)
+	log.SetLevel(log.DebugLevel)
 }
 
 //{"output":"14:54:07.709160152: Alert Shell spawned in a container other than entrypoint (user=root ssh (id=52d928d8b2a3) shell=sh parent=watch cmdline=sh -c id)","priority":"Alert","rule":"Run shell in container","time":"2017-03-31T14:54:07.709160152Z"}
@@ -29,13 +30,12 @@ func SetupLogging() {
 func handle(ctx context.Context, f FalcoNotification, wg sync.WaitGroup) {
 
 	log.Info(f)
-	log.Info(f.Time.String())
 
 	if f.Priority == "Alert" {
 
 		var myExp = namedRegexp{regexp.MustCompile(`.*\(user=(?P<user>[[:alpha:]]+)\s+(?P<image_name>[[:alpha:]]+)\s+\(id=(?P<image_id>[[:alnum:]]{6,})\).*\)`)}
 		data := myExp.FindStringSubmatchMap(f.RawOutput)
-		log.Info(data)
+		log.Debug(data)
 
 		log.Debug("Alert received, will try to stop container")
 		container_list := ListRunningContainers()

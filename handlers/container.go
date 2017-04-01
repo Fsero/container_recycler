@@ -8,8 +8,8 @@ import (
 	"github.com/docker/docker/client"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -71,8 +71,6 @@ func checkIfExistsFlag(alreadyBeingDeletedFlag string, container ContainerInfo) 
 
 func ScheduleContainerStop(ctx context.Context, container ContainerInfo) {
 
-	var once sync.Once
-
 	tmp_prefix_path := ctx.Value("tmp_flags_file_path").(string)
 	alreadyBeingDeletedFlag := tmp_prefix_path + container.ID
 	flag, err := checkIfExistsFlag(alreadyBeingDeletedFlag, container)
@@ -85,28 +83,22 @@ func ScheduleContainerStop(ctx context.Context, container ContainerInfo) {
 		log.Fatalf("incorrect format for exposure_timeout")
 	}
 	log.Debug("ScheduleContainerStop: outside the lambda function waiting for DONE signal")
-	lambda := func() {
 
-		//wait for the exposure_time
-		time.Sleep(timeout_duration)
-
-		var data []byte
-		data = make([]byte, 1)
-		// creating the flag
-		err = ioutil.WriteFile(alreadyBeingDeletedFlag, data, 0644)
-		if err != nil {
-			log.Fatal(err)
-		}
-		StopContainer(ctx, container)
-		deleteFlagFile(alreadyBeingDeletedFlag, container)
-		log.Debug("ScheduleContainerStop: Lambda function DONE")
+	//wait for the exposure_time
+	timer := time.NewTimer(timeout_duration)
+	runtime.Gosched()
+	<-timer.C
+	var data []byte
+	data = make([]byte, 1)
+	// creating the flag
+	err = ioutil.WriteFile(alreadyBeingDeletedFlag, data, 0644)
+	if err != nil {
+		log.Fatal(err)
 	}
-	done := make(chan bool)
-	go func() {
-		once.Do(lambda)
-		done <- true
-	}()
-	<-done
+	StopContainer(ctx, container)
+	deleteFlagFile(alreadyBeingDeletedFlag, container)
+	log.Debug("ScheduleContainerStop: Lambda function DONE")
+
 }
 
 func GetContainerByName(ContainerName string, container_list []ContainerInfo) (ContainerInfo, bool) {
