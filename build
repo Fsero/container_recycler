@@ -25,4 +25,4 @@ fi
 if [[ ! "${BUILD_GOARCH:-}" == "" ]];then
   export GOARCH=$BUILD_GOARCH
 fi
-go build -a -tags netgo -installsuffix netgo -o "$OUTPUT_PATH" ./
+go build -race -a -tags netgo -installsuffix netgo -o "$OUTPUT_PATH" ./
